@@ -6,14 +6,17 @@
 
 import Combine
 // import Firebase modules here
-
-
+import FirebaseCore
+import FirebaseFirestore
 
 
 class LocationRepository: ObservableObject {
   // Set up properties here
+  private let path: String = "location_scans"
+  private let store = Firestore.firestore()
   
-  
+  @Published var locations: [Location] = []
+  private var cancellables: Set<AnyCancellable> = []
   
   init() {
     get()
@@ -21,11 +24,16 @@ class LocationRepository: ObservableObject {
 
   func get() {
     // Complete this function
-    
-    
-    
-    
-    
-
+    store.collection(path)
+      .addSnapshotListener { querySnapshot, error in
+        if let error {
+          print("Error getting locations: \(error.localizedDescription)")
+          return
+        }
+        
+        self.locations = querySnapshot?.documents.compactMap { document in
+          try? document.data(as: Location.self)
+        } ?? []
+      }
   }
 }
